@@ -63,32 +63,31 @@ class Bullet:
         win.blit(self.IMG, (self.x, self.y))
 
 
-def collide(object1, object2):
-    MASK1 = pygame.mask.from_surface(object1.IMG)
-    MASK2 = pygame.mask.from_surface(object2.IMG)
+def collide(bullet, enemy):
+    
+    colishion = False
 
-    OBJ1RECT = MASK1.get_rect()
-    OBJ2RECT = MASK2.get_rect()
+    bulletPos = [bullet.x, bullet.y]
+    enemyPos = [enemy.x+PADDING, enemy.y]  
+    enemyPos.append(enemyPos[1] + pygame.mask.from_surface(enemy.IMG).get_size()[1] - 10)
+    enemyPos.append(enemyPos[0] + pygame.mask.from_surface(enemy.IMG).get_size()[0] - 20)
+    # enemyPos[1] += int(enemy.IMG.get_height()/2)
 
-    offset1_x = OBJ1RECT.x - OBJ2RECT.x
-    offset1_y = OBJ1RECT.y - OBJ2RECT.y
+    if enemyPos[0] < bulletPos[0] < enemyPos[3]:
+        if enemyPos[1] < bulletPos[1] < enemyPos[2]:
+            # print(1, bulletPos, enemyPos)
+            colishion = True
 
-    overlap1 = MASK2.overlap(MASK1, (offset1_x, offset1_y))
+    bulletPos[0] += bullet.IMG.get_width() 
 
-    offset2_x = OBJ2RECT.x - OBJ1RECT.x
-    offset2_y = OBJ2RECT.y - OBJ1RECT.y
+    if colishion is False:
+        if enemyPos[0] < bulletPos[0] < enemyPos[3]:
+            if enemyPos[1] < bulletPos[1] < enemyPos[2]:
+                # print(2, bulletPos, enemyPos)
+                colishion = True
+    
 
-    overlap2 = MASK1.overlap(MASK2, (offset2_x, offset2_y))
-    print(overlap2)
-
-    # If our two objects overlap then return True else False
-    if overlap1 and overlap2:
-        print("True", overlap1, overlap2)
-        return False
-
-    else:
-        # print("False")
-        return False
+    return colishion
 
 def drawWindow(win, player, bullets, enemys):
 
@@ -137,9 +136,14 @@ SIZE = (800, 600)
 WIN = pygame.display.set_mode(SIZE)
 PADDING = 10
 FPS = 60
-PlayerStep = 10
+PlayerStep = 5
+BulletDelay = 300
+
 
 def main():
+
+    prevTime = -float("inf")
+
     enemys = [Enemy(
         int(SIZE[0]/2),
         int(SIZE[1]/2)
@@ -209,11 +213,14 @@ def main():
 
         # If player wants to shoot. 
         if shoot is True:
-            PlayerX = player.x + int(player.IMG.get_width()/4)
-            PlayerY = player.y - int(IMGS[-2].get_height()/2)
-            bullets.append(Bullet(PlayerX, PlayerY))
-            # print((PlayerX, PlayerY))
-            # shoot = False
+            currentTime = pygame.time.get_ticks()
+            if currentTime - prevTime > BulletDelay:
+                prevTime = pygame.time.get_ticks()
+                PlayerX = player.x + int(player.IMG.get_width()/4)
+                PlayerY = player.y - int(IMGS[-2].get_height()/2)
+                bullets.append(Bullet(PlayerX, PlayerY))
+                # print((PlayerX, PlayerY))
+                # shoot = False
 
 
 
@@ -237,20 +244,18 @@ def main():
 
             for bPos, bullet in enumerate(bullets):
                 for ePos, enemy in enumerate(enemys):
-                    result = collide(enemy, bullet)
-                    # print(result)
+                    result = collide(bullet, enemy)
                     if result is True:
                         delPosBullet.append(bPos)
                         delPosEnemy.append(ePos)
             
             if len(delPosBullet) != 0:
                 for pos in delPosBullet:
-                    del bullets[pos]
+                    bullets.pop(pos)
             
             if len(delPosEnemy) != 0:
                 for pos in delPosEnemy:
-                    del delPosEnemy[pos]
-
+                    enemys.pop(pos)
 
         # Enemy movement
         if True:
