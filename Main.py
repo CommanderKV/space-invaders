@@ -7,15 +7,31 @@ class Enemy:
         self.IMG = IMGS[2]
         self.x = x
         self.y = y
+        self.right = True
+        self.left = False
     
-    def move(self, x, y):
-        if self.x + x > PADDING:
-            if (self.x+self.IMG.get_width()) + x < SIZE[0] - PADDING:
-                self.x += x
+    def touchWall(self):
+        x = EnemyStep
+
+        if (self.x+self.IMG.get_width()) + x < SIZE[0] - PADDING and self.right is True:
+            return False
         
-        if self.y + y > PADDING:
-            if (self.y+self.IMG.get_height()) + y < SIZE[1] - PADDING:
-                self.y += y
+        elif self.x - x > PADDING and self.left is True:
+            return False
+
+        else:
+            return True
+
+
+    def move(self):
+        x = EnemyStep
+        
+        if (self.x+self.IMG.get_width()) + x < SIZE[0] - PADDING and self.right is True:
+            self.x += x
+        
+        elif self.x - x > PADDING and self.left is True:
+            self.x -= x
+        
     
     def draw(self, win):
         win.blit(self.IMG, (self.x, self.y))
@@ -63,6 +79,17 @@ class Bullet:
         win.blit(self.IMG, (self.x, self.y))
 
 
+def checkLost(enemys):
+    if len(enemys) == 0:
+        return False
+
+    else:
+        for enemy in enemys:
+            if enemy.y + pygame.mask.from_surface(enemy.IMG).get_size()[1] >= SIZE[1] - PADDING:
+                return True
+    
+    return 
+
 
 def collide(bullet, enemy):
     
@@ -91,7 +118,7 @@ def collide(bullet, enemy):
     return colishion
 
 
-def drawWindow(win, player, bullets, enemys):
+def drawWindow(win, player, bullets, enemys, end=False):
 
     # Draw background
     win.fill((255, 0, 0))
@@ -110,7 +137,36 @@ def drawWindow(win, player, bullets, enemys):
         for bullet in bullets:
             bullet.draw(win)
 
-    # Refresh the screen
+    if end is False:
+        # Refresh the screen
+        pygame.display.update()
+
+
+def drawEndGame(win, lost):
+    pygame.font.init()
+
+    font = pygame.font.SysFont("comicsans", 60)
+    LostText = font.render("You lost!", 1, (255, 255, 255))
+    WonText = font.render("Congrats you won!", 1, (255, 255, 255))
+
+    if lost is True:
+        win.blit(
+            LostText, 
+            (
+                int(SIZE[0]/2) - int(LostText.get_width()/2),
+                int(SIZE[1]/2) - int(LostText.get_height()/2)
+            )
+        )
+    
+    else:
+        win.blit(
+            WonText, 
+            (
+                int(SIZE[0]/2) - int(WonText.get_width()/2),
+                int(SIZE[1]/2) - int(WonText.get_height()/2)
+            )
+        )
+
     pygame.display.update()
 
 
@@ -126,8 +182,8 @@ def spawnEnemys():
     y = PADDING
     ROWS = 3
 
-    for i in range(ROWS):
-        for i in range(COLS-2):
+    for _ in range(ROWS):
+        for _ in range(COLS-2):
             enemys.append(
                 Enemy(
                     x,
@@ -192,7 +248,9 @@ def main():
     right = False
     left = False
     shoot = False
-    nextMoveEnemy = False
+    EnemyDown = False
+    GameOver = False
+    lost = False
 
     clock = pygame.time.Clock()
 
@@ -212,12 +270,15 @@ def main():
             # If a key is pressed
             if event.type == pygame.KEYDOWN:
 
+                # If the D key is pressed
                 if event.key == pygame.K_d:
                     right = True
                 
+                # If the A key is pressed
                 if event.key == pygame.K_a:
                     left = True
-            
+
+                # If the SPACE BAR is pressed
                 if event.key == pygame.K_SPACE:
                     shoot = True
             
@@ -226,40 +287,184 @@ def main():
             # If a key is released
             if event.type == pygame.KEYUP:
 
+                # If the D key is pressed
                 if event.key == pygame.K_d:
                     right = False
                 
+                # If the A key is pressed
                 if event.key == pygame.K_a:
                     left = False
-                
+
+                # If the SPACE BAR is pressed
                 if event.key == pygame.K_SPACE:
                     shoot = False
 
+        # If the game is not over
+        if GameOver is False:
+
+            # Player movement
+            if True:
+
+                # If the user wats to move 
+                # right then move right
+                if right is True:
+                    player.move(PlayerStep)
+
+                # If the player wants to move 
+                # left then move left
+                if left is True:
+                    player.move(-PlayerStep)
+
+            # If player wants to shoot. 
+            if shoot is True:
+                # Get the current time in mili seconds
+                currentTime = pygame.time.get_ticks()
+
+                # If the time passed from the last bullet 
+                # fired is greater than BulletDelay then
+                if currentTime - prevTime >= BulletDelay:
+                    prevTime = pygame.time.get_ticks()
+
+                    # Get the player x and y then make a bullet
+                    PlayerX = player.x + int(player.IMG.get_width()/4)
+                    PlayerY = player.y - int(IMGS[-2].get_height()/2)
+                    bullets.append(
+                        Bullet(PlayerX, PlayerY)
+                    )
 
 
-        # Player movement
-        if True:
-            if right is True:
-                player.move(PlayerStep)
 
-            if left is True:
-                player.move(-PlayerStep)
+            # Bullet movement
+            if True:
+                # If there are bullets to move.
+                if len(bullets) != 0:
+                    removeIndexs = []
 
-        # If player wants to shoot. 
-        if shoot is True:
-            currentTime = pygame.time.get_ticks()
-            if currentTime - prevTime > BulletDelay:
-                prevTime = pygame.time.get_ticks()
-                PlayerX = player.x + int(player.IMG.get_width()/4)
-                PlayerY = player.y - int(IMGS[-2].get_height()/2)
-                bullets.append(Bullet(PlayerX, PlayerY))
-                # print((PlayerX, PlayerY))
-                # shoot = False
+                    # Move the bullet
+                    for pos, bullet in enumerate(bullets):
+                        result = bullet.move()
+                        if result is not None:
+                            removeIndexs.append(pos)
+                    
+                    # If the bullet hit the top of 
+                    # the screen delete it
+                    if len(removeIndexs) != 0:
+                        for pos in removeIndexs:
+                            bullets.pop(pos)
+                            
+
+
+            # Check if bullet collided with enemy or wall
+            if len(bullets) != 0:
+                delPosBullet = []
+                delPosEnemy = []
+
+                # Check to see if colishion happens
+                for bPos, bullet in enumerate(bullets):
+                    for ePos, enemy in enumerate(enemys):
+                        result = collide(bullet, enemy)
+                        if result is True:
+                            delPosBullet.append(bPos)
+                            delPosEnemy.append(ePos)
+                
+                # Removing the bullet and the enemy
+                if len(delPosBullet) != 0:
+                    for pos in delPosBullet:
+                        bullets.pop(pos)
+                
+                if len(delPosEnemy) != 0:
+                    for pos in delPosEnemy:
+                        try:
+                            enemys.pop(pos)
+                        except:
+
+                            try:
+                                enemys.pop(pos-1)
+                            except:
+
+                                try:
+                                    enemys.pop(pos+1)
+                                except:
+                                    pass
 
 
 
-        # Bullet movement
-        if True:
+            # Enemy movement
+            if True:
+                for enemy in enemys:
+                    downTF = enemy.touchWall()
+
+                    if downTF is True:
+                        EnemyDown = True
+
+                for enemy in enemys:
+                    enemy.move()
+
+                    if EnemyDown:
+                        enemy.y += int(pygame.mask.from_surface(enemy.IMG).get_size()[0] + SPACING)
+                        
+                        if enemy.right is True:
+                            enemy.left = True
+                            enemy.right = False
+
+                        elif enemy.left is True:
+                            enemy.left = False
+                            enemy.right = True
+
+                EnemyDown = False
+
+
+
+
+            # Check to see if end of game!
+            gameCondition = checkLost(enemys)
+
+            if gameCondition != None:
+                GameOver = True
+                print("Game over!", gameCondition)
+
+                if gameCondition == True:
+                    lost = True
+
+                else:
+                    won = True
+        
+
+            # Fill the screen with
+            # this IMG  \/  here \/
+            WIN.blit(IMGS[-1], (0, 0))
+
+            # Draw the window
+            drawWindow(WIN, player, bullets, enemys)
+    
+        # If the game is over then
+        else:
+            
+            # Move the enemys
+            if len(enemys) != 0:
+                for enemy in enemys:
+                    downTF = enemy.touchWall()
+
+                    if downTF is True:
+                        EnemyDown = True
+
+                for enemy in enemys:
+                    enemy.move()
+
+                    if EnemyDown:
+                        enemy.y += int(pygame.mask.from_surface(enemy.IMG).get_size()[0] + SPACING)
+                        
+                        if enemy.right is True:
+                            enemy.left = True
+                            enemy.right = False
+
+                        elif enemy.left is True:
+                            enemy.left = False
+                            enemy.right = True
+
+                EnemyDown = False
+
+            # Move the bullets
             if len(bullets) != 0:
                 removeIndexs = []
                 for pos, bullet in enumerate(bullets):
@@ -270,65 +475,23 @@ def main():
                 if len(removeIndexs) != 0:
                     for pos in removeIndexs:
                         bullets.pop(pos)
-                        
 
+            # Move the player
+            if right is True:
+                player.move(PlayerStep)
 
-        # Check if bullet collided with enemy or wall
-        if len(bullets) != 0:
-            delPosBullet = []
-            delPosEnemy = []
+            if left is True:
+                player.move(-PlayerStep)
 
-            for bPos, bullet in enumerate(bullets):
-                for ePos, enemy in enumerate(enemys):
-                    result = collide(bullet, enemy)
-                    if result is True:
-                        delPosBullet.append(bPos)
-                        delPosEnemy.append(ePos)
-            
-            if len(delPosBullet) != 0:
-                for pos in delPosBullet:
-                    bullets.pop(pos)
-            
-            if len(delPosEnemy) != 0:
-                for pos in delPosEnemy:
-                    enemys.pop(pos)
+            # Fill the screen with
+            # this IMG  \/  here \/
+            WIN.blit(IMGS[-1], (0, 0))
 
+            # Draw the window
+            drawWindow(WIN, player, bullets, enemys, True)
 
-
-        # Enemy movement
-        if True:
-            down = False
-            farthestY = 0
-            for enemy in enemys:
-                enemySIZE = pygame.mask.from_surface(enemy.IMG).get_size()[0]
-                if ((enemy.y + enemySIZE) + PADDING) > farthestY:
-                    farthestY = (enemy.y + enemySIZE) + PADDING
-                    print(farthestY)
-            
-            if farthestY >= SIZE[0] - PADDING:
-                down = True
-
-            if down is False and nextMoveEnemy is False:
-                for enemy in enemys:
-                    enemy.move(EnemyStep, 0)
-            
-            elif down is False and nextMoveEnemy is True:
-                for enemy in enemys:
-                    enemy.move(-EnemyStep, 0)
-
-            elif down is True:
-                print("DOWN")
-                for enemy in enemys:
-                    enemy.move(0, EnemyStep)
-
-
-        # Fill the screen with
-        # this color \/ 
-        WIN.blit(IMGS[-1], (0, 0))
-
-        # Draw the window
-        drawWindow(WIN, player, bullets, enemys)
-    
+            # Draw our endgame screen
+            drawEndGame(WIN, lost)
 
     pygame.display.quit()
 
