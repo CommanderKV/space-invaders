@@ -476,7 +476,7 @@ def main():
 
             if gameCondition != None:
                 GameOver = True
-                print("Game over!", gameCondition)
+                # print("Game over!", gameCondition)
 
                 if gameCondition == True:
                     lost = True
