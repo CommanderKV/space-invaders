@@ -3,13 +3,20 @@ import os
 
 class Enemy:
     
+    # Initalize a class of Enemy
     def __init__(self, x, y):
+        # Setup enemy image and other 
+        # vairables
         self.IMG = IMGS[2]
         self.x = x
         self.y = y
         self.right = True
         self.left = False
     
+    # Check to see if enemy touchs the 
+    # side of the screen return
+    # False if it is not touching 
+    # the side and retrun True if it is
     def touchWall(self):
         x = EnemyStep
 
@@ -22,7 +29,8 @@ class Enemy:
         else:
             return True
 
-
+    # Move the enemy on the x axis the 
+    # main program deals with the y axis
     def move(self):
         x = EnemyStep
         
@@ -32,19 +40,24 @@ class Enemy:
         elif self.x - x > PADDING and self.left is True:
             self.x -= x
         
-    
+    # Draw the enemy to screen
     def draw(self, win):
         win.blit(self.IMG, (self.x, self.y))
 
 
 class Player:
     
+    # Initalize a class of Player
     def __init__(self, x, y):
+        # Set up the players image 
+        # and other vairables
         self.IMG = IMGS[0]
         self.x = x
         self.y = y
     
-    
+    # Moves the player from left to 
+    # the right and checks to see 
+    # if the move is possible
     def move(self, x, y=0):
         if self.x + x > PADDING:
             if (self.x+self.IMG.get_width()) + x < SIZE[0] - PADDING:
@@ -54,19 +67,25 @@ class Player:
             if (self.y+self.IMG.get_height()) + y < SIZE[1] - PADDING:
                 self.y += y
 
-                
+    # Draw the player
     def draw(self, win):
         win.blit(self.IMG, (self.x, self.y))
 
 
 class Bullet:
     
+    # Initalize a class of Bullet
     def __init__(self, x, y):
+        # Setup the image for the 
+        # bullet and other vairables
         self.IMG = IMGS[1]
         self.x = x
         self.y = y
-        self.step = 5
+        self.step = BulletMove
     
+    # Move the bullet and check if it 
+    # hits the top of the screen if so 
+    # return True if it can move return None
     def move(self):
         if self.y - self.step > -(self.IMG.get_height() + 5):
             self.y -= self.step
@@ -75,10 +94,18 @@ class Bullet:
         else:
             return True
     
+    # Draw the bullet
     def draw(self, win):
         win.blit(self.IMG, (self.x, self.y))
 
 
+# Check to see if the enemys have been 
+# defeated or if they have reached the 
+# bottom. If there are no more enemys 
+# then return False if there are enemys 
+# and at least one has passed the bottom 
+# of the screen then return True. If none 
+# of these are true then return None
 def checkLost(enemys):
     if len(enemys) == 0:
         return False
@@ -91,6 +118,10 @@ def checkLost(enemys):
     return 
 
 
+# Check to see if there is a collishion 
+# between a bullet and an enemy. If there 
+# is one then return True if there is no 
+# collishion retrun False
 def collide(bullet, enemy):
     
     colishion = False
@@ -118,30 +149,34 @@ def collide(bullet, enemy):
     return colishion
 
 
+# Draw the window with everything on it
 def drawWindow(win, player, bullets, enemys, end=False):
 
     # Draw background
     win.fill((255, 0, 0))
     win.blit(IMGS[-1], (0, 0))
 
-    # Draw our player
-    player.draw(win)
-
     # If we have enemys then we draw them
     if len(enemys) != 0:
         for enemy in enemys:
-            enemy.draw(win)
+            if enemy.y > 0:
+                enemy.draw(win)
 
     # If we have bullets then we will draw them
     if len(bullets) != 0:
         for bullet in bullets:
             bullet.draw(win)
+    
+    # Draw our player
+    player.draw(win)
 
     if end is False:
         # Refresh the screen
         pygame.display.update()
 
 
+# Draw the end game window. The text 
+# depends if they have lost or won
 def drawEndGame(win, lost):
     pygame.font.init()
 
@@ -170,6 +205,8 @@ def drawEndGame(win, lost):
     pygame.display.update()
 
 
+# Initalize a list of enemys in a 
+# grid shape to begin with
 def spawnEnemys():
     enemys = []
     enemyImage = IMGS[-2]
@@ -200,20 +237,22 @@ def spawnEnemys():
     return enemys
         
 
+# Get the path for this file
+if True:
+    path = __file__.split("\\")[:-1]
 
-path = __file__.split("\\")[:-1]
+    end = ""
+    path[0] = path[0].upper()
+    path[0] += "\\"
+    for item in path:
+        print(f"end: {end}, item: {item}")
+        end = os.path.join(end, item)
 
-end = ""
-path[0] = path[0].upper()
-path[0] += "\\"
-for item in path:
-    print(f"end: {end}, item: {item}")
-    end = os.path.join(end, item)
-
-print(f"Final path: '{end}'")
-path = str(end)
+    print(f"Final path: '{end}'")
+    path = str(end)
 
 
+# Setup the images list
 IMGS = [
     pygame.image.load(os.path.join(path, "player.png")),
     pygame.image.load(os.path.join(path, "bullet.png")),
@@ -222,6 +261,7 @@ IMGS = [
 ]
 
 
+# Setup global vairables
 SIZE = (800, 600)
 WIN = pygame.display.set_mode(SIZE)
 SPACING = 10
@@ -229,17 +269,13 @@ PADDING = 10 # Padding on all sides
 FPS = 60 # Frames per second
 PlayerStep = 5 # Pixels per move
 EnemyStep = 2 # Pixels per move
+BulletMove = 5 # Pixels per move
 BulletDelay = 300 # Ms
 
 
 def main():
-
-    prevTime = -float("inf")
-
-    enemys = spawnEnemys()
-
-    bullets = []
-
+    
+    # Player vairables
     player = Player(
         int((SIZE[0] - PADDING*2)/2), 
         ((SIZE[1]-PADDING) - IMGS[0].get_height())
@@ -248,14 +284,29 @@ def main():
     right = False
     left = False
     shoot = False
-    EnemyDown = False
     GameOver = False
     lost = False
 
+
+    # Enemy vairables
+    enemys = spawnEnemys()
+
+    EnemyDown = False
+
+
+    # Bullet vairables
+    bullets = []
+
+    prevTime = -float("inf")
+    
+
+    # Get a clock to set the FPS
     clock = pygame.time.Clock()
 
     run = True
     while run:
+
+        # Run at the game at FPS frames per second
         clock.tick(FPS)
 
 
@@ -327,12 +378,10 @@ def main():
 
                     # Get the player x and y then make a bullet
                     PlayerX = player.x + int(player.IMG.get_width()/4)
-                    PlayerY = player.y - int(IMGS[-2].get_height()/2)
+                    PlayerY = player.y - int(IMGS[-2].get_height()/4)
                     bullets.append(
                         Bullet(PlayerX, PlayerY)
                     )
-
-
 
             # Bullet movement
             if True:
@@ -351,9 +400,7 @@ def main():
                     if len(removeIndexs) != 0:
                         for pos in removeIndexs:
                             bullets.pop(pos)
-                            
-
-
+        
             # Check if bullet collided with enemy or wall
             if len(bullets) != 0:
                 delPosBullet = []
@@ -370,7 +417,18 @@ def main():
                 # Removing the bullet and the enemy
                 if len(delPosBullet) != 0:
                     for pos in delPosBullet:
-                        bullets.pop(pos)
+                        try:
+                            bullets.pop(pos)
+                        except:
+
+                            try:
+                                bullets.pop(pos-1)
+                            except:
+
+                                try:
+                                    bullets.pop(pos+1)
+                                except:
+                                    pass
                 
                 if len(delPosEnemy) != 0:
                     for pos in delPosEnemy:
@@ -386,8 +444,6 @@ def main():
                                     enemys.pop(pos+1)
                                 except:
                                     pass
-
-
 
             # Enemy movement
             if True:
@@ -412,7 +468,6 @@ def main():
                             enemy.right = True
 
                 EnemyDown = False
-
 
 
 
@@ -493,8 +548,9 @@ def main():
             # Draw our endgame screen
             drawEndGame(WIN, lost)
 
+    # Quit the pygame display
     pygame.display.quit()
 
-
+# Start the game
 main()
 
