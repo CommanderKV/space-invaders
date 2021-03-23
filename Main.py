@@ -300,8 +300,10 @@ def main():
             down = False
             farthestY = 0
             for enemy in enemys:
-                if (enemy.y + PADDING) > farthestY:
-                    farthestY += enemy.y + PADDING
+                enemySIZE = pygame.mask.from_surface(enemy.IMG).get_size()[0]
+                if ((enemy.y + enemySIZE) + PADDING) > farthestY:
+                    farthestY = (enemy.y + enemySIZE) + PADDING
+                    print(farthestY)
             
             if farthestY >= SIZE[0] - PADDING:
                 down = True
@@ -315,6 +317,7 @@ def main():
                     enemy.move(-EnemyStep, 0)
 
             elif down is True:
+                print("DOWN")
                 for enemy in enemys:
                     enemy.move(0, EnemyStep)
 
