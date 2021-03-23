@@ -1,4 +1,5 @@
 import pygame
+import random
 import os
 
 class Enemy:
@@ -98,6 +99,12 @@ class Bullet:
     def draw(self, win):
         win.blit(self.IMG, (self.x, self.y))
 
+
+def makeRandomWave(enemys, maxNum):
+    yPos = random.randint(0, -maxNum)
+    newEnemys = spawnEnemys(y=yPos)
+    return newEnemys
+    
 
 # Check to see if the enemys have been 
 # defeated or if they have reached the 
@@ -207,7 +214,7 @@ def drawEndGame(win, lost):
 
 # Initalize a list of enemys in a 
 # grid shape to begin with
-def spawnEnemys():
+def spawnEnemys(ROWS=3, y=PADDING):
     enemys = []
     enemyImage = IMGS[-2]
     enemyMASK = pygame.mask.from_surface(enemyImage)
@@ -216,8 +223,6 @@ def spawnEnemys():
     COLS = int((SIZE[0]-PADDING*2) / ((enemySIZE[0]) + SPACING))
 
     x = PADDING + SPACING
-    y = PADDING
-    ROWS = 3
 
     for _ in range(ROWS):
         for _ in range(COLS-2):
@@ -298,7 +303,7 @@ def main():
     bullets = []
 
     prevTime = -float("inf")
-    
+
 
     # Get a clock to set the FPS
     clock = pygame.time.Clock()
@@ -309,14 +314,13 @@ def main():
         # Run at the game at FPS frames per second
         clock.tick(FPS)
 
-
         # For each event in pygame
         for event in pygame.event.get():
 
             # If the X button is pressed quit
             if event.type == pygame.QUIT:
                 run = False
-            
+
 
             # If a key is pressed
             if event.type == pygame.KEYDOWN:
@@ -324,7 +328,7 @@ def main():
                 # If the D key is pressed
                 if event.key == pygame.K_d:
                     right = True
-                
+
                 # If the A key is pressed
                 if event.key == pygame.K_a:
                     left = True
@@ -332,7 +336,7 @@ def main():
                 # If the SPACE BAR is pressed
                 if event.key == pygame.K_SPACE:
                     shoot = True
-            
+
 
 
             # If a key is released
@@ -341,7 +345,7 @@ def main():
                 # If the D key is pressed
                 if event.key == pygame.K_d:
                     right = False
-                
+
                 # If the A key is pressed
                 if event.key == pygame.K_a:
                     left = False
@@ -394,13 +398,13 @@ def main():
                         result = bullet.move()
                         if result is not None:
                             removeIndexs.append(pos)
-                    
+
                     # If the bullet hit the top of 
                     # the screen delete it
                     if len(removeIndexs) != 0:
                         for pos in removeIndexs:
                             bullets.pop(pos)
-        
+
             # Check if bullet collided with enemy or wall
             if len(bullets) != 0:
                 delPosBullet = []
@@ -413,7 +417,7 @@ def main():
                         if result is True:
                             delPosBullet.append(bPos)
                             delPosEnemy.append(ePos)
-                
+
                 # Removing the bullet and the enemy
                 if len(delPosBullet) != 0:
                     for pos in delPosBullet:
@@ -429,7 +433,7 @@ def main():
                                     bullets.pop(pos+1)
                                 except:
                                     pass
-                
+
                 if len(delPosEnemy) != 0:
                     for pos in delPosEnemy:
                         try:
@@ -458,7 +462,7 @@ def main():
 
                     if EnemyDown:
                         enemy.y += int(pygame.mask.from_surface(enemy.IMG).get_size()[0] + SPACING)
-                        
+
                         if enemy.right is True:
                             enemy.left = True
                             enemy.right = False
@@ -483,7 +487,7 @@ def main():
 
                 else:
                     won = True
-        
+
 
             # Fill the screen with
             # this IMG  \/  here \/
@@ -491,10 +495,10 @@ def main():
 
             # Draw the window
             drawWindow(WIN, player, bullets, enemys)
-    
+
         # If the game is over then
         else:
-            
+
             # Move the enemys
             if len(enemys) != 0:
                 for enemy in enemys:
@@ -508,7 +512,7 @@ def main():
 
                     if EnemyDown:
                         enemy.y += int(pygame.mask.from_surface(enemy.IMG).get_size()[0] + SPACING)
-                        
+
                         if enemy.right is True:
                             enemy.left = True
                             enemy.right = False
@@ -526,7 +530,7 @@ def main():
                     result = bullet.move()
                     if result is not None:
                         removeIndexs.append(pos)
-                
+
                 if len(removeIndexs) != 0:
                     for pos in removeIndexs:
                         bullets.pop(pos)
