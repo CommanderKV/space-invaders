@@ -63,6 +63,7 @@ class Bullet:
         win.blit(self.IMG, (self.x, self.y))
 
 
+
 def collide(bullet, enemy):
     
     colishion = False
@@ -89,6 +90,7 @@ def collide(bullet, enemy):
 
     return colishion
 
+
 def drawWindow(win, player, bullets, enemys):
 
     # Draw background
@@ -110,6 +112,38 @@ def drawWindow(win, player, bullets, enemys):
 
     # Refresh the screen
     pygame.display.update()
+
+
+def spawnEnemys():
+    enemys = []
+    enemyImage = IMGS[-2]
+    enemyMASK = pygame.mask.from_surface(enemyImage)
+    enemySIZE = enemyMASK.get_size()
+
+    COLS = int((SIZE[0]-PADDING*2) / ((enemySIZE[0]) + SPACING))
+
+    x = PADDING + SPACING
+    y = PADDING
+    ROWS = 3
+
+    for i in range(ROWS):
+        for i in range(COLS-2):
+            enemys.append(
+                Enemy(
+                    x,
+                    y
+                )
+            )
+            
+            x += (enemySIZE[0]) + SPACING
+        
+        x = PADDING + SPACING
+        y += (enemySIZE[1]) + SPACING
+    
+
+    return enemys
+        
+
 
 path = __file__.split("\\")[:-1]
 
@@ -134,20 +168,19 @@ IMGS = [
 
 SIZE = (800, 600)
 WIN = pygame.display.set_mode(SIZE)
-PADDING = 10
-FPS = 60
-PlayerStep = 5
-BulletDelay = 300
+SPACING = 10
+PADDING = 10 # Padding on all sides
+FPS = 60 # Frames per second
+PlayerStep = 5 # Pixels per move
+EnemyStep = 2 # Pixels per move
+BulletDelay = 300 # Ms
 
 
 def main():
 
     prevTime = -float("inf")
 
-    enemys = [Enemy(
-        int(SIZE[0]/2),
-        int(SIZE[1]/2)
-    )]
+    enemys = spawnEnemys()
 
     bullets = []
 
@@ -159,6 +192,7 @@ def main():
     right = False
     left = False
     shoot = False
+    nextMoveEnemy = False
 
     clock = pygame.time.Clock()
 
@@ -238,6 +272,8 @@ def main():
                         bullets.pop(pos)
                         
 
+
+        # Check if bullet collided with enemy or wall
         if len(bullets) != 0:
             delPosBullet = []
             delPosEnemy = []
@@ -257,9 +293,31 @@ def main():
                 for pos in delPosEnemy:
                     enemys.pop(pos)
 
+
+
         # Enemy movement
         if True:
-            pass
+            down = False
+            farthestY = 0
+            for enemy in enemys:
+                if (enemy.y + PADDING) > farthestY:
+                    farthestY += enemy.y + PADDING
+            
+            if farthestY >= SIZE[0] - PADDING:
+                down = True
+
+            if down is False and nextMoveEnemy is False:
+                for enemy in enemys:
+                    enemy.move(EnemyStep, 0)
+            
+            elif down is False and nextMoveEnemy is True:
+                for enemy in enemys:
+                    enemy.move(-EnemyStep, 0)
+
+            elif down is True:
+                for enemy in enemys:
+                    enemy.move(0, EnemyStep)
+
 
         # Fill the screen with
         # this color \/ 
