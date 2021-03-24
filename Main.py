@@ -359,8 +359,10 @@ def main():
                         
                         if button.text.upper() == "EASY":
                             Difficulty = 0
+
                         elif button.text.upper() == "MEDIUM":
                             Difficulty = 1
+                            
                         elif button.text.upper() == "HARD":
                             Difficulty = 2
                         
