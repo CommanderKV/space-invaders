@@ -100,8 +100,42 @@ class Bullet:
         win.blit(self.IMG, (self.x, self.y))
 
 
+class Button():
+    def __init__(self, color, x, y, width, height, text='', function=None, args=None):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+        self.function = function
+        self.args = args
+
+    def draw(self,  win, outline=None):
+        #Call this method to draw the button on the screen
+        if outline:
+            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+            
+        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
+        
+        if self.text != '':
+            font = pygame.font.SysFont('comicsans', 30)
+            text = font.render(self.text, 1, (0,0,0))
+            win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+
+    def isOver(self, pos):
+        #Pos is the mouse position or a tuple of (x,y) coordinates
+        if pos[0] > self.x and pos[0] < self.x + self.width:
+            if pos[1] > self.y and pos[1] < self.y + self.height:
+                return True
+            
+        return False
+
+
 def makeRandomWave(enemys, maxNum):
-    yPos = random.randint(0, -maxNum)
+    num = maxNum*10
+    minNum = (pygame.mask.from_surface(enemys[-1].IMG).get_size()[1]*3) + (SPACING)
+    yPos = random.randint(-num, -minNum)
     newEnemys = spawnEnemys(y=yPos)
     return newEnemys
     
@@ -214,7 +248,10 @@ def drawEndGame(win, lost):
 
 # Initalize a list of enemys in a 
 # grid shape to begin with
-def spawnEnemys(ROWS=3, y=PADDING):
+def spawnEnemys(ROWS=3, y=0):
+    if y == 0:
+        y = PADDING
+
     enemys = []
     enemyImage = IMGS[-2]
     enemyMASK = pygame.mask.from_surface(enemyImage)
@@ -272,13 +309,24 @@ WIN = pygame.display.set_mode(SIZE)
 SPACING = 10
 PADDING = 10 # Padding on all sides
 FPS = 60 # Frames per second
-PlayerStep = 5 # Pixels per move
+PlayerStep = 8 # Pixels per move
 EnemyStep = 2 # Pixels per move
 BulletMove = 5 # Pixels per move
 BulletDelay = 300 # Ms
 
 
 def main():
+    run = True
+    while run:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mousePos = pygame.mouse.get_pos()
+
+        pygame.display.update()
     
     # Player vairables
     player = Player(
@@ -297,6 +345,8 @@ def main():
     enemys = spawnEnemys()
 
     EnemyDown = False
+    Amount = 0
+    Difficulty = 2 # Subtract 1 from this number
 
 
     # Bullet vairables
@@ -472,6 +522,15 @@ def main():
                             enemy.right = True
 
                 EnemyDown = False
+
+                if len(enemys) != 0:
+                    Length = pygame.mask.from_surface(enemys[-1].IMG).get_size()[1]*3
+                    if enemys[-1].y >= Length:
+                        if Amount != Difficulty:
+                            newEnemys = makeRandomWave(enemys, 30)
+                            for enemy in newEnemys:
+                                enemys.append(enemy)
+                            Amount += 1
 
 
 
