@@ -316,6 +316,35 @@ BulletDelay = 300 # Ms
 
 
 def main():
+    pygame.font.init()
+
+    buttons = []
+    space = 40
+    x = int(SIZE[0]/2) - (150+space)
+    y = int(SIZE[1]/2) - 20
+    
+
+    for i in range(3):
+        if i == 0:
+            text = "Easy"
+        elif i == 1:
+            text = "Medium"
+        elif i == 2:
+            text = "Hard"
+        buttons.append(
+            Button(
+                (255, 255, 255),
+                x,
+                y,
+                100,
+                40,
+                text
+
+            )
+        )
+
+        x += 100+space
+
     run = True
     while run:
 
@@ -325,6 +354,20 @@ def main():
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = pygame.mouse.get_pos()
+                for button in buttons:
+                    if button.isOver(mousePos):
+                        
+                        if button.text.upper() == "EASY":
+                            Difficulty = 0
+                        elif button.text.upper() == "MEDIUM":
+                            Difficulty = 1
+                        elif button.text.upper() == "HARD":
+                            Difficulty = 2
+                        
+                        run = False
+        
+        for button in buttons:
+            button.draw(WIN)
 
         pygame.display.update()
     
@@ -346,7 +389,6 @@ def main():
 
     EnemyDown = False
     Amount = 0
-    Difficulty = 2 # Subtract 1 from this number
 
 
     # Bullet vairables
