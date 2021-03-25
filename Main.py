@@ -348,29 +348,47 @@ def main():
     run = True
     while run:
 
+        # For each event in pygame do
         for event in pygame.event.get():
+
+            # If the event is quit then exit
             if event.type == pygame.QUIT:
-                run = False
+                quit()
             
+            # If the event is a mouse button down then
             if event.type == pygame.MOUSEBUTTONDOWN:
+
+                # Get the mouse position
                 mousePos = pygame.mouse.get_pos()
+
+                # For each button in buttons
                 for button in buttons:
+
+                    # if the button is clicked then
                     if button.isOver(mousePos):
                         
+                        # Check to see what the text is 
+                        # then change the diffuculty based 
+                        # on that.
                         if button.text.upper() == "EASY":
-                            Difficulty = 0
+                            Difficulty = 1
 
                         elif button.text.upper() == "MEDIUM":
-                            Difficulty = 1
-                            
-                        elif button.text.upper() == "HARD":
                             Difficulty = 2
+
+                        elif button.text.upper() == "HARD":
+                            Difficulty = 3
                         
+                        # Set run to false to exit 
+                        # the running loop.
                         run = False
         
+        # For each button in buttons 
+        # draw the button.
         for button in buttons:
             button.draw(WIN)
 
+        # Update the display
         pygame.display.update()
     
     # Player vairables
