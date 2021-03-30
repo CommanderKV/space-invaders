@@ -322,6 +322,7 @@ def main():
     space = 40
     x = int(SIZE[0]/2) - (150+space)
     y = int(SIZE[1]/2) - 20
+    clock = pygame.time.Clock()
     
 
     for i in range(3):
@@ -347,6 +348,7 @@ def main():
 
     run = True
     while run:
+        clock.tick(FPS)
 
         # For each event in pygame do
         for event in pygame.event.get():
