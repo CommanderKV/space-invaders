@@ -55,6 +55,8 @@ class Player:
         self.IMG = IMGS[0]
         self.x = x
         self.y = y
+        self.health = 100
+        self.maxHealth = 100
     
     # Moves the player from left to 
     # the right and checks to see 
@@ -211,6 +213,12 @@ def drawWindow(win, player, bullets, enemys, end=False):
     # Draw our player
     player.draw(win)
 
+    # Draw the health bar at the top right
+    startX = (SIZE[0] - PADDING) - (player.maxHealth)*2
+    endX = (SIZE[0] - PADDING) - (player.maxHealth*2 - player.health*2)
+    Y = 10
+    pygame.draw.line(win, (0, 255, 0), (startX, Y), (endX, Y), 10)
+
     if end is False:
         # Refresh the screen
         pygame.display.update()
@@ -308,14 +316,16 @@ SIZE = (800, 600)
 WIN = pygame.display.set_mode(SIZE)
 SPACING = 10
 PADDING = 10 # Padding on all sides
-FPS = 60 # Frames per second
+FPS = 30 # Frames per second
 PlayerStep = 8 # Pixels per move
 EnemyStep = 2 # Pixels per move
 BulletMove = 5 # Pixels per move
 BulletDelay = 300 # Ms
+dmgPerEnemy = 10 # Damage per enemy
 
 
 def main():
+    global EnemyStep
     pygame.font.init()
 
     buttons = []
@@ -377,9 +387,11 @@ def main():
 
                         elif button.text.upper() == "MEDIUM":
                             Difficulty = 2
+                            EnemyStep += 1
 
                         elif button.text.upper() == "HARD":
                             Difficulty = 3
+                            EnemyStep += 1 
                         
                         # Set run to false to exit 
                         # the running loop.
@@ -595,11 +607,18 @@ def main():
                             for enemy in newEnemys:
                                 enemys.append(enemy)
                             Amount += 1
+                
+                for enemy in enemys:
+                    if enemy.y + pygame.mask.from_surface(enemy.IMG).get_size()[1] >= SIZE[1] - PADDING:
+                        player.health -= dmgPerEnemy
+                        enemy.y = -1000
+                        enemys.remove(enemy)
+                        print(player.health)
 
 
 
             # Check to see if end of game!
-            gameCondition = checkLost(enemys)
+            gameCondition = None if player.health >= 0 else True if len(enemys) != 0 else False
 
             if gameCondition != None:
                 GameOver = True
