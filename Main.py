@@ -217,7 +217,18 @@ def drawWindow(win, player, bullets, enemys, end=False):
     startX = (SIZE[0] - PADDING) - (player.maxHealth)*2
     endX = (SIZE[0] - PADDING) - (player.maxHealth*2 - player.health*2)
     Y = 10
-    pygame.draw.line(win, (0, 255, 0), (startX, Y), (endX, Y), 10)
+
+    if player.health <= 0:
+        endX = startX + 2
+
+    color = (0, 255, 0)
+    if 40 <= player.health <= 70:
+        color = (255, 255, 0)
+    elif player.health <= 40:
+        color = (255, 0, 0)
+
+
+    pygame.draw.line(win, color, (startX, Y), (endX, Y), 10)
 
     if end is False:
         # Refresh the screen
@@ -508,7 +519,7 @@ def main():
 
                     # Get the player x and y then make a bullet
                     PlayerX = player.x + int(player.IMG.get_width()/4)
-                    PlayerY = player.y - int(IMGS[-2].get_height()/4)
+                    PlayerY = (player.y - int(IMGS[-2].get_height()/4)) + 20
                     bullets.append(
                         Bullet(PlayerX, PlayerY)
                     )
@@ -613,12 +624,17 @@ def main():
                         player.health -= dmgPerEnemy
                         enemy.y = -1000
                         enemys.remove(enemy)
-                        print(player.health)
 
 
 
             # Check to see if end of game!
-            gameCondition = None if player.health >= 0 else True if len(enemys) != 0 else False
+            gameCondition = None
+            if player.health > 0:
+                if len(enemys) <= 0:
+                    gameCondition = False
+            else:
+                gameCondition = True
+
 
             if gameCondition != None:
                 GameOver = True
@@ -693,6 +709,13 @@ def main():
 
             # Draw our endgame screen
             drawEndGame(WIN, lost)
+
+        if len(enemys) != 0:
+            for enemy in enemys:
+                if enemy.y >= SIZE[1]:
+                    enemys.remove(enemy)
+                elif enemy.y+enemy.IMG.get_height() <= 0:
+                    enemys.remove(enemy) 
 
     # Quit the pygame display
     pygame.display.quit()
